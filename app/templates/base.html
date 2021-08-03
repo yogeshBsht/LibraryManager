@@ -1,0 +1,22 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - Library Manager</title>
+      {% else %}
+      <title>Welcome to Library Manger</title>
+      {% endif %}
+    </head>
+    <body>
+        <div>
+            Library Manager: 
+            <a href = "{{ url_for('main.index')}}">Home</a>
+            {% if current_user.is_anonymous %}
+                <a href="{{ url_for('auth.login') }}">{{ ('Login') }}</a>
+            {% else %}
+                <a href="{{ url_for('main.user', book=current_user.books_issued) }}">{{ ('MyBooks') }}</a>
+                <a href="{{ url_for('auth.logout') }}">{{ ('Logout') }}</a>
+            {% endif %}
+        </div>
+        {% block content %}{% endblock %}
+    </body>
+</html>
