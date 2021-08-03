@@ -11,21 +11,24 @@ from app.main.forms import EmptyForm, UpdateInventoryForm
 @login_required
 def index():
     book = Book.query.all()
-    form = EmptyForm()
+    if current_user.username != 'admin':
+        form = EmptyForm()
+    else:
+        form = UpdateInventoryForm()    
     if form.validate_on_submit():
         db.session.commit()  
     return render_template('index.html', title='Home', form=form, user=current_user, book=book)
 
 
-# @bp.route('/update_inventory', methods=['GET', 'POST'])
-# @login_required
-# def update_inventory():
-#     book = Book.query.all()
-#     form = UpdateInventoryForm()
-#     if form.validate_on_submit():
-#         # current_user.issue_book(book)
-#         db.session.commit()    
-#     return render_template('index.html', form=form, user=current_user, book=book)
+@bp.route('/update_inventory/<bookname>', methods=['GET', 'POST'])
+@login_required
+def update_inventory(bookname):
+    book = Book.query.filter_by(bookname=bookname).first()
+    form = UpdateInventoryForm()
+    if form.validate_on_submit():
+        book.update_inventory(form.inventory.data)
+        db.session.commit()    
+    return redirect(url_for('main.index'))
 
 
 @bp.route('/user')
@@ -39,8 +42,8 @@ def user():
 @bp.route('/issue/<bookname>', methods=['POST'])
 @login_required
 def issue(bookname):
-    form = EmptyForm()
     book = Book.query.filter_by(bookname=bookname).first()
+    form = EmptyForm()
     if form.validate_on_submit():
         current_user.issue_book(book)
         db.session.commit()        
@@ -50,8 +53,8 @@ def issue(bookname):
 @bp.route('/return/<bookname>', methods=['POST'])
 @login_required
 def returnn(bookname):
-    form = EmptyForm()
     book = Book.query.filter_by(bookname=bookname).first()
+    form = EmptyForm()
     if form.validate_on_submit():
         current_user.return_book(book)
         db.session.commit()   
