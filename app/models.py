@@ -16,6 +16,9 @@ class Book(UserMixin, db.Model):
     author = db.Column(db.String(64))
     inventory = db.Column(db.Integer)
 
+    def update_inventory(self, inventory):
+        self.inventory = inventory
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
