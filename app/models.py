@@ -45,7 +45,18 @@ class User(UserMixin, db.Model):
         '''Sets superuser to False if not superuser'''
         if not self.superuser:
             self. superuser = False
-        # return self.superuser
+
+    def validate_username(self, username):
+        '''Raises error message if username already exists in database'''
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        '''Raises error message if email already exists in database'''
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email address.')    
     
     def has_issued(self, book):
         '''Returns True only if a book is issued by user'''
@@ -54,7 +65,7 @@ class User(UserMixin, db.Model):
 
     def issue_book(self, book):
         '''Issue book to user and update book inventory'''
-        if not self.has_issued(book) and book.inventory != 0:
+        if not self.has_issued(book) and self.books_issued.count()<3 and book.inventory != 0:
             self.books_issued.append(book)
             book.inventory -= 1
             print('Book issued')
