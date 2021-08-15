@@ -6,15 +6,24 @@
         {{ form.hidden_tag() }}
         <p>
             {{ form.bookname.label }}<br>
-            {{ form.bookname(size=32) }}
+            {{ form.bookname(size=32) }}<br>
+            {% for error in form.bookname.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
         </p>
         <p>
             {{ form.author.label }}<br>
-            {{ form.author(size=32) }}
+            {{ form.author(size=32) }}<br>
+            {% for error in form.author.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
         </p>
         <p>
             {{ form.inventory.label }}<br>
-            {{ form.inventory(size=32) }}
+            {{ form.inventory(size=32) }}<br>
+            {% for error in form.inventory.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
     </form>
