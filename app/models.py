@@ -16,7 +16,7 @@ class Book(UserMixin, db.Model):
     author = db.Column(db.String(64))
     inventory = db.Column(db.Integer)
 
-    def update_inventory(self, inventory):
+    def update_inventory(self, inventory=0):
         self.inventory = inventory
 
 
@@ -41,41 +41,29 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def is_superuser(self):
-        '''Sets superuser to False if not superuser'''
+    def set_superuser(self):
+        """Set superuser to False if not superuser."""
         if not self.superuser:
-            self. superuser = False
-
-    def validate_username(self, username):
-        '''Raises error message if username already exists in database'''
-        user = User.query.filter_by(username=username.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different username.')
-
-    def validate_email(self, email):
-        '''Raises error message if email already exists in database'''
-        user = User.query.filter_by(email=email.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different email address.')    
+            self.superuser = False
     
     def has_issued(self, book):
-        '''Returns True only if a book is issued by user'''
+        """Return True only if book is issued to user."""
         return self.books_issued.filter(
             user_book.c.book_id == book.id).count() == 1  
 
     def issue_book(self, book):
-        '''Issue book to user and update book inventory'''
+        """Issue book to user and update book inventory."""
         if not self.has_issued(book) and self.books_issued.count()<3 and book.inventory != 0:
             self.books_issued.append(book)
             book.inventory -= 1
-            print('Book issued')
+            return 1
+        return 0    
 
     def return_book(self, book):
-        '''Return book and update book inventory'''
+        """Return book and update book inventory."""
         if self.has_issued(book):
             self.books_issued.remove(book)
             book.inventory += 1
-            print('Book returned')
 
 
 @login.user_loader
