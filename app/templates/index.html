@@ -20,7 +20,7 @@
                     <td>{{b.bookname}}</td>
                     <td>{{b.author}}</td>
                     <td>{{b.inventory}}</td>
-                    {% if user.username != 'admin'%}
+                    {% if user.username != 'admin' %}
                         {% if user.has_issued(b) %}
                         <td><form action="{{ url_for('main.returnn', bookname=b.bookname) }}" method="post">
                             {{ form.hidden_tag() }}
@@ -32,12 +32,6 @@
                             {{ form.submit(value='Issue') }}
                             </form></td>     
                         {% endif %}
-                    {% else %}
-                        <td><form action="{{ url_for('main.update_inventory', bookname=b.bookname) }}" method="post">
-                            {{ form.hidden_tag() }}
-                            {{ form.inventory()}}
-                            {{ form.submit(value='Update Inventory')}}
-                        </td>
                     {% endif %}
                 </tr>
                 {% endfor %}
