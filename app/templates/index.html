@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Hi, {{ user.username }}!</h1>
     <div>
+        <h1>Hi, {{ user.username }}!</h1>  
+        {% if book %}
         <table>
             <thead>
                 <tr>
@@ -12,8 +13,7 @@
                     <th>Inventory</th>
                 </tr>
             </thead>
-            <tbody>
-                {% if book %}
+            <tbody>    
                 {% for b in book %}
                 <tr>
                     <td>{{b.id}}</td>
@@ -35,11 +35,11 @@
                     {% endif %}
                 </tr>
                 {% endfor %}
-                {% else %}
-                    <p> No books to show!</p>
-                {% endif %}
             </tbody>                
         </table>
+        {% else %}
+            <p> No books to show!</p>
+        {% endif %}
         {% if prev_url %}
             <a href="{{ prev_url }}">Prev</a>
         {% endif %}
