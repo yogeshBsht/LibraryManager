@@ -9,7 +9,6 @@ from flask_login import LoginManager
 from flask_mail import Mail, Message
 from config import Config
 
-# ISSUE: Mail functionality?
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -17,7 +16,6 @@ login = LoginManager()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
 mail = Mail()
-# message = Message() # Not functioning
 
 
 def create_app(config_class=Config):
@@ -28,7 +26,6 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login.init_app(app)
     mail.init_app(app)
-    # message.init_app(app)
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
@@ -39,7 +36,7 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
-    if not app.debug:
+    if not app.debug and not app.testing:
         if app.config['MAIL_SERVER']:
             auth = None
             if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
