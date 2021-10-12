@@ -1,7 +1,8 @@
-from flask import current_app
+from flask import current_app, g
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
+from sqlalchemy import or_
 
 
 user_book = db.Table('user_book',
@@ -18,6 +19,24 @@ class Book(UserMixin, db.Model):
 
     def update_inventory(self, inventory=0):
         self.inventory = inventory
+
+    @classmethod
+    def search(cls, expression, page, per_page):
+        """Search given expression in Book database and return
+            results for given page and total results."""
+        search = "%{0}%".format(expression)
+        results = Book.query.filter(or_(Book.bookname.like(search),
+                Book.author.like(search))).all()
+        total = len(results)
+        results = results[(page-1)*per_page:page*per_page]
+        ids = [result.id for result in results]
+        if total == 0:
+            return cls.query.filter_by(id=0), 0
+        when = []
+        for i in range(len(ids)):
+            when.append((ids[i], i))
+        return cls.query.filter(cls.id.in_(ids)).order_by(
+            db.case(when, value=cls.id)), total    
 
 
 class User(UserMixin, db.Model):
