@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, flash, request, \
-    current_app, abort
+    current_app, abort, g
 from flask_login import current_user, login_required
 from app import db
 from app.models import Book
@@ -9,26 +9,18 @@ from app.main.forms import EmptyForm, UpdateInventoryForm, AddBookForm, \
 from sqlalchemy import or_
 
 
+@bp.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        g.search_form = SearchForm()
+
+
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    page = request.args.get('page', 1, type=int)
-    book = Book.query.order_by(Book.id).paginate(
-        page, current_app.config['BOOKS_PER_PAGE'], False)
-    next_url = url_for('main.index', page=book.next_num) \
-            if book.has_next else None
-    prev_url = url_for('main.index', page=book.prev_num) \
-            if book.has_prev else None
-    if current_user.username != 'admin':
-        form = EmptyForm()
-    else:
-        form = UpdateInventoryForm()    
-    if form.validate_on_submit():
-        db.session.commit()      
     return render_template('index.html', title='Home', 
-            form=form, user=current_user, book=book.items, next_url=next_url,
-            prev_url=prev_url)
+            user=current_user)
 
 
 @bp.route('/update_inventory/<bookname>', methods=['GET', 'POST'])
@@ -38,7 +30,9 @@ def update_inventory(bookname):
     form = UpdateInventoryForm()
     if form.validate_on_submit():
         book.update_inventory(form.inventory.data)
-        db.session.commit()    
+        db.session.commit()
+        flash(f'Congratulations, book {book.bookname} inventory updated \
+            to {form.inventory.data}')    
         return redirect(url_for('main.index'))
     return render_template('book.html', title=bookname, user=current_user,
                 form=form, book=book)
@@ -47,9 +41,11 @@ def update_inventory(bookname):
 @bp.route('/user')
 @login_required
 def user():
-    book = current_user.books_issued
+    book = current_user.books_issued.all()
+    for b in book:
+        print(b.bookname)
     form = EmptyForm()
-    return render_template('index.html', title='MyBooks', user=current_user,
+    return render_template('search.html', title='MyBooks', user=current_user,
             form=form, book=book)
 
 
@@ -95,15 +91,21 @@ def add_book():
 @bp.route('/search', methods=['GET','POST'])
 @login_required
 def search():
-    form = SearchForm()
-    results = None
-    if form.validate_on_submit():
-        search_value = form.search_string.data
-        search = "%{0}%".format(search_value)
-        results = Book.query.filter(or_(Book.bookname.like(search),
-                Book.author.like(search))).all()
+    if not g.search_form.validate():
+        return redirect(url_for('main.index'))
+    if current_user.username != 'admin':
+        form = EmptyForm()
+    else:
+        form = UpdateInventoryForm()    
+    page = request.args.get('page', 1, type=int)
+    book, total = Book.search(g.search_form.q.data, page,
+                               current_app.config['BOOKS_PER_PAGE'])
+    next_url = url_for('main.search', q=g.search_form.q.data, page=page + 1) \
+        if total > page * current_app.config['BOOKS_PER_PAGE'] else None
+    prev_url = url_for('main.search', q=g.search_form.q.data, page=page - 1) \
+        if page > 1 else None
     return render_template('search.html', title='Search', user=current_user, 
-            form=form, book=results)
+            form=form, book=book, next_url=next_url, prev_url=prev_url)
 
 
 @bp.route('/<bookname>')
