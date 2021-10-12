@@ -15,12 +15,16 @@
                 <a href = "{{ url_for('main.index')}}">Home</a>
                 {% if current_user.username == 'admin' %}
                     <a href="{{ url_for('main.add_book') }}">{{ 'Add Book' }}</a>
-                    <a href = "{{ url_for('main.search')}}">Update Inventory</a>
                 {% else %}
                     <a href="{{ url_for('main.user', book=current_user.books_issued) }}">{{ ('MyBooks') }}</a>  
-                    <a href = "{{ url_for('main.search')}}">Issue/Return</a>  
                 {% endif %}
-                
+                {% if g.search_form %}
+                    <form method="get" action="{{ url_for('main.search') }}">
+                        <div>
+                            {{ g.search_form.q(size=20, placeholder=g.search_form.q.label.text) }}
+                        </div>
+                    </form>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}">{{ ('Logout') }}</a>
             {% endif %}
         </div>
