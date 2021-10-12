@@ -2,49 +2,6 @@
 
 {% block content %}
     <div>
-        <h1>Hi, {{ user.username }}!</h1>  
-        {% if book %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Inventory</th>
-                </tr>
-            </thead>
-            <tbody>    
-                {% for b in book %}
-                <tr>
-                    <td>{{b.id}}</td>
-                    <td>{{b.bookname}}</td>
-                    <td>{{b.author}}</td>
-                    <td>{{b.inventory}}</td>
-                    {% if user.username != 'admin' %}
-                        {% if user.has_issued(b) %}
-                        <td><form action="{{ url_for('main.returnn', bookname=b.bookname) }}" method="post">
-                            {{ form.hidden_tag() }}
-                            {{ form.submit(value='Return') }}
-                            </form></td> 
-                        {% else %}
-                        <td><form action="{{ url_for('main.issue', bookname=b.bookname) }}" method="post">
-                            {{ form.hidden_tag() }}
-                            {{ form.submit(value='Issue') }}
-                            </form></td>     
-                        {% endif %}
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>                
-        </table>
-        {% else %}
-            <p> No books to show!</p>
-        {% endif %}
-        {% if prev_url %}
-            <a href="{{ prev_url }}">Prev</a>
-        {% endif %}
-        {% if next_url %}
-            <a href="{{ next_url }}">Next</a>
-        {% endif %}
+        <h1>Hi, {{ user.username }}!</h1>
     </div>
 {% endblock %}
