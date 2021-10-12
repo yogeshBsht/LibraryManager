@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask import request
 from wtforms import IntegerField, StringField, SubmitField
 from wtforms.validators import DataRequired, ValidationError
 from app.models import Book
@@ -30,5 +31,11 @@ class AddBookForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    search_string = StringField('Search', validators=[DataRequired()])
-    submit = SubmitField(('Search'))
+    q = StringField(('Search Books'), validators=[DataRequired()])
+
+    def __init__(self, *args, **kwargs):
+        if 'formdata' not in kwargs:
+            kwargs['formdata'] = request.args
+        if 'csrf_enabled' not in kwargs:
+            kwargs['csrf_enabled'] = False
+        super(SearchForm, self).__init__(*args, **kwargs)
