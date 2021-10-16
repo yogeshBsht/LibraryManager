@@ -1,40 +1,63 @@
-<html>
-    <head>
-      {% if title %}
-      <title>{{ title }} - Library Manager</title>
-      {% else %}
-      <title>Welcome to Library Manger</title>
-      {% endif %}
-    </head>
-    <body>
-        <div>
-            Library Manager      
-            {% if current_user.is_anonymous %}
-                <a href="{{ url_for('auth.login') }}">{{ ('Login') }}</a>
-            {% else %}
-                <a href = "{{ url_for('main.index')}}">Home</a>
-                {% if current_user.username == 'admin' %}
-                    <a href="{{ url_for('main.add_book') }}">{{ 'Add Book' }}</a>
-                {% else %}
-                    <a href="{{ url_for('main.user', book=current_user.books_issued) }}">{{ ('MyBooks') }}</a>  
-                {% endif %}
+{% extends 'bootstrap/base.html' %}
+
+{% block title %}
+    {% if title %}
+        {{ title }} - Library Manager</title>
+    {% else %}
+        Welcome to Library Manger</title>
+    {% endif %}
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('main.index') }}">LibraryManager</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ url_for('main.index') }}">{{ ('Home') }}</a></li>
+                    {% if current_user.username == 'admin' %}
+                        <li><a href="{{ url_for('main.add_book') }}">{{ 'Add Book' }}</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('main.user', book=current_user.books_issued) }}">{{ ('MyBooks') }}</a></li>  
+                    {% endif %}
+                </ul>
                 {% if g.search_form %}
-                    <form method="get" action="{{ url_for('main.search') }}">
-                        <div>
-                            {{ g.search_form.q(size=20, placeholder=g.search_form.q.label.text) }}
-                        </div>
-                    </form>
+                <form class="navbar-form navbar-left" method="get" action="{{ url_for('main.search') }}">
+                    <div class="form-group">
+                        {{ g.search_form.q(size=20, class='form-control', placeholder=g.search_form.q.label.text) }}
+                    </div>
+                </form>
                 {% endif %}
-                <a href="{{ url_for('auth.logout') }}">{{ ('Logout') }}</a>
-            {% endif %}
+                <ul class="nav navbar-nav navbar-right">
+                    {% if current_user.is_anonymous %}
+                    <li><a href="{{ url_for('auth.login') }}">{{ ('Login') }}</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('auth.logout') }}">{{ ('Logout') }}</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <span style="color: red;">[{{ message }}]</span>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
         {% endwith %}
-        {% block content %}{% endblock %}
-    </body>
-</html>
+
+        {% block app_content %}{% endblock %}
+    </div>
+{% endblock %}

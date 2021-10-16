@@ -31,7 +31,7 @@ class Book(UserMixin, db.Model):
         results = results[(page-1)*per_page:page*per_page]
         ids = [result.id for result in results]
         if total == 0:
-            return cls.query.filter_by(id=0), 0
+            return None, 0
         when = []
         for i in range(len(ids)):
             when.append((ids[i], i))
