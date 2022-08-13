@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div>
+        <table class="table table-hover">
+            <tr>
+                <td><img src="{{ url_for('static', filename=book.bookname+'.jpg') }}" style="width:96px;height:128px;"></td>
+                <td>
+                    <p><h4>{{ book.bookname }}</h4></p>
+                    <p>{{ book.author }}</p>
+                    <form action="" method="post">
+                        {{ form.hidden_tag() }}
+                        <p>
+                            {{ form.rating.label }}<br>
+                            {{ form.rating() }}<br>
+                            {% for error in form.rating.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                            {% endfor %}
+                        </p>
+                        <p>
+                            {{ form.body.label }}<br>
+                            {{ form.body(cols=50, rows=4) }}<br>
+                            {% for error in form.body.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                            {% endfor %}
+                        </p>
+                        {% if review %}
+                            <p>{{ form.submit(value='Update Review') }}</p>
+                        {% else %}
+                            <p>{{ form.submit(value='Review') }}</p>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div>
+        <hr>
+        {% for review in reviews %}
+            {% include '_review.html' %}
+        {% endfor %}
+    </div>    
+{% endblock %}

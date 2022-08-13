@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask import request
-from wtforms import IntegerField, StringField, SubmitField
+from wtforms import IntegerField, StringField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, ValidationError
 from app.models import Book
 
@@ -39,3 +39,9 @@ class SearchForm(FlaskForm):
         if 'csrf_enabled' not in kwargs:
             kwargs['csrf_enabled'] = False
         super(SearchForm, self).__init__(*args, **kwargs)
+
+
+class ReviewForm(FlaskForm):
+    rating = SelectField('Rate the book', choices=[1, 2, 3, 4, 5], coerce=int, validate_choice=True)
+    body = TextAreaField(('Write your review here.'), validators=[DataRequired()])
+    submit = SubmitField(('Submit'))

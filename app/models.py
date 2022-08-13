@@ -3,6 +3,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
 from sqlalchemy import or_
+from datetime import datetime
 
 
 user_book = db.Table('user_book',
@@ -16,6 +17,9 @@ class Book(UserMixin, db.Model):
     bookname = db.Column(db.String(64), index=True, unique=True)
     author = db.Column(db.String(64))
     inventory = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<Book {}>'.format(self.bookname)
 
     def update_inventory(self, inventory=0):
         self.inventory = inventory
@@ -50,6 +54,7 @@ class User(UserMixin, db.Model):
         primaryjoin=(user_book.c.user_id == id),
         secondaryjoin=(user_book.c.book_id == Book.id),
         backref=db.backref('user_book', lazy='dynamic'), lazy='dynamic')
+    reviews = db.relationship('Review', backref='reviewer', lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -83,6 +88,18 @@ class User(UserMixin, db.Model):
         if self.has_issued(book):
             self.books_issued.remove(book)
             book.inventory += 1
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Integer)
+    body = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return '<Review_id:{} on book_id:{} by user_id:{} >'.format(self.id, self.book_id, self.user_id)
 
 
 @login.user_loader
