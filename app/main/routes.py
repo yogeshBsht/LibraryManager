@@ -2,10 +2,10 @@ from flask import render_template, redirect, url_for, flash, request, \
     current_app, abort, g
 from flask_login import current_user, login_required
 from app import db
-from app.models import Book
+from app.models import Book, Review
 from app.main import bp
 from app.main.forms import EmptyForm, UpdateInventoryForm, AddBookForm, \
-    SearchForm
+    SearchForm, ReviewForm
 from sqlalchemy import or_
 
 
@@ -74,7 +74,7 @@ def returnn(bookname):
     return redirect(url_for('main.index'))
 
 
-@bp.route('/add_book', methods=['GET','POST'])
+@bp.route('/add_book', methods=['GET', 'POST'])
 @login_required
 def add_book():
     form = AddBookForm()
@@ -88,7 +88,7 @@ def add_book():
     return render_template('addBook.html', title='AddBook', form=form)
 
 
-@bp.route('/search', methods=['GET','POST'])
+@bp.route('/search', methods=['GET', 'POST'])
 @login_required
 def search():
     if not g.search_form.validate():
@@ -108,16 +108,31 @@ def search():
             form=form, book=book, next_url=next_url, prev_url=prev_url)
 
 
-@bp.route('/<bookname>')
+@bp.route('/<bookname>', methods=['GET', 'POST'])
 @login_required
 def book(bookname):
     book = Book.query.filter_by(bookname=bookname).first()
+    reviews = Review.query.filter_by(book_id=book.id)
     if current_user.username != 'admin':
-        form = EmptyForm()
+        form = ReviewForm()
     else:
         form = UpdateInventoryForm()
-    if book:    
+    if book:
+        review = Review.query.filter_by(user_id=current_user.id, book_id=book.id).first()
+        if form.validate_on_submit():
+            if review:
+                review.rating = form.rating.data
+                review.body = form.body.data
+            else:
+                review = Review(rating=form.rating.data, body=form.body.data, book_id=book.id, reviewer=current_user)
+                db.session.add(review)
+            db.session.commit()
+            flash(('Your review has been saved.'))
+            return redirect(url_for('main.book', bookname=bookname))
+        elif request.method == 'GET' and review:
+            form.rating.data = review.rating
+            form.body.data = review.body        
         return render_template('book.html', title=bookname, user=current_user,
-                form=form, book=book)
+                form=form, book=book, review=review, reviews=reviews)
     else:
-        abort(400)                           
+        abort(400)
