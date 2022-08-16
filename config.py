@@ -11,7 +11,8 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'SECRET_KEY'
-    BOOKS_PER_PAGE = 3
+    BOOKS_PER_PAGE = int(os.environ.get('BOOKS_PER_PAGE') or 3)
+    REVIEWS_PER_PAGE = int(os.environ.get('REVIEWS_PER_PAGE') or 1)
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)

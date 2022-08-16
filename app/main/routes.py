@@ -112,7 +112,6 @@ def search():
 @login_required
 def book(bookname):
     book = Book.query.filter_by(bookname=bookname).first()
-    reviews = Review.query.filter_by(book_id=book.id)
     if current_user.username != 'admin':
         form = ReviewForm()
     else:
@@ -131,8 +130,19 @@ def book(bookname):
             return redirect(url_for('main.book', bookname=bookname))
         elif request.method == 'GET' and review:
             form.rating.data = review.rating
-            form.body.data = review.body        
+            form.body.data = review.body
+        
+        page = request.args.get('page', 1, type=int)
+        reviews = Review.query.filter_by(book_id=book.id).paginate(
+            page, current_app.config['REVIEWS_PER_PAGE'], False
+        )
+        next_url = url_for('main.book', bookname=bookname, page=reviews.next_num) \
+            if reviews.has_next else None
+        prev_url = url_for('main.book', bookname=bookname, page=reviews.prev_num) \
+            if reviews.has_prev else None
+        
         return render_template('book.html', title=bookname, user=current_user,
-                form=form, book=book, review=review, reviews=reviews)
+                form=form, book=book, review=review, reviews=reviews.items, 
+                next_url=next_url, prev_url=prev_url)
     else:
         abort(400)
